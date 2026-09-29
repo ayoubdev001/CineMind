@@ -32,8 +32,9 @@ export const Movie = sequelize.define(
       type: DataTypes.DATEONLY,
     },
 
-    duration: {
-      type: DataTypes.INTEGER,
+    isNowPlaying: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
 
     mediaType: {
