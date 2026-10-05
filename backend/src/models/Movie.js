@@ -41,6 +41,10 @@ export const Movie = sequelize.define(
       type: DataTypes.ENUM("movie", "tv_show"),
       allowNull: false,
     },
+    embedding: {
+      type: DataTypes.VECTOR(768),
+      allowNull: true, // null until the embed script runs
+    },
   },
   {
     tableName: "movies",
@@ -52,3 +56,10 @@ export const Movie = sequelize.define(
     ],
   }
 );
+
+// Keep embedding text generation in one place for all Movie instances.
+Movie.prototype.toEmbeddingText = function (genreNames = []) {
+  const parts = [this.title, this.overview, genreNames.join(", "), this.mediaType];
+  return parts.filter(Boolean).join(". ");
+};
+
