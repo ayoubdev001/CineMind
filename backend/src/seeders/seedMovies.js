@@ -2,7 +2,7 @@ import "dotenv/config";
 import { sequelize, Genre, Movie } from "../models/index.js";
 import { fetchGenres, fetchPopular, posterUrl, fetchNowPlaying } from "../services/tmdbService.js";
 
-const PAGES_PER_TYPE = 1; // ~how many data per list 
+const PAGES_PER_TYPE = 5; // ~how many data per list 
 
 
 
@@ -43,7 +43,7 @@ async function seedTitles(type, genreRows) {
     const { results } = await fetchPopular(type, page);
 
     for (const item of results) {
-      const [movie] = await Movie.findOrCreate({
+      const [movie, created] = await Movie.findOrCreate({
         where: { tmdbId: item.id, mediaType },
         defaults: {
           tmdbId: item.id,
@@ -55,6 +55,16 @@ async function seedTitles(type, genreRows) {
           
         },
       });
+
+      //to keep movies that stored in db updated
+      if (!created) {
+  await movie.update({
+    title: item.title ?? item.name,
+    overview: item.overview,
+    posterUrl: posterUrl(item.poster_path),
+    releaseDate: item.release_date || item.first_air_date || null,
+  });
+}
 
       const matchedGenres = genreRows.filter((g) => item.genre_ids?.includes(g.tmdbId));
       await movie.setGenres(matchedGenres);

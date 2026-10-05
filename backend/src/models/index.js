@@ -5,9 +5,6 @@ import { Genre } from "./Genre.js";
 import { Movie } from "./Movie.js";
 import { Watchlist } from "./Watchlist.js";
 import { Favorite } from "./Favorite.js";
-import { Conversation } from "./Conversation.js";
-import { Message } from "./Message.js";
-import { AgentLog } from "./AgentLog.js";
 
 // 1-1
 User.hasOne(UserPreference, { foreignKey: "userId", onDelete: "CASCADE" });
@@ -21,14 +18,6 @@ for (const Model of [Watchlist, Favorite]) {
   Model.belongsTo(Movie, { foreignKey: "movieId" });
 }
 
-User.hasMany(Conversation, { foreignKey: "userId", onDelete: "CASCADE" });
-Conversation.belongsTo(User, { foreignKey: "userId" });
-
-Conversation.hasMany(Message, { foreignKey: "conversationId", onDelete: "CASCADE" });
-Message.belongsTo(Conversation, { foreignKey: "conversationId" });
-
-User.hasMany(AgentLog, { foreignKey: "userId", onDelete: "CASCADE" });
-AgentLog.belongsTo(User, { foreignKey: "userId" });
 
 // N-N
 Movie.belongsToMany(Genre, {
@@ -50,7 +39,4 @@ export {
   Movie,
   Watchlist,
   Favorite,
-  Conversation,
-  Message,
-  AgentLog,
 };

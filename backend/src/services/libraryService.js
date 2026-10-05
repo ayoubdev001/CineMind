@@ -1,6 +1,8 @@
 import { Movie } from "../models/index.js";
 import { httpError } from "../middleware/errorHandler.js";
 
+
+//watchlist logic
 export function makeLibraryService(Model, label) {
   return {
     async list(userId) {

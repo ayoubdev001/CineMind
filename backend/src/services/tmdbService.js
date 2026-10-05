@@ -1,6 +1,8 @@
 const TMDB_BASE = "https://api.themoviedb.org/3";
 const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 
+
+//api logic from tmdb
 async function tmdbFetch(path, params = {}) {
   const url = new URL(TMDB_BASE + path);
   url.searchParams.set("api_key", process.env.TMDB_API_KEY);
