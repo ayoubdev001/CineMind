@@ -2,7 +2,7 @@ import { answerQuestion } from "../services/chatService.js";
 
 export async function chat(req, res) {
   try {
-    const result = await answerQuestion(req.userId, req.body.message);
+    const result = await answerQuestion(req.body.message);
     res.json(result);
   } catch (error) {
     if (error.message === "AI_QUOTA_EXCEEDED") {

@@ -1,0 +1,548 @@
+openapi: 3.0.3
+info:
+  title: CineMind AI API
+  description: >
+    Movie/TV discovery assistant backend — auth, catalog browsing,
+    watchlist/favorites, and a RAG-grounded AI chat endpoint.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Auth
+  - name: Movies
+  - name: Watchlist
+  - name: Favorites
+  - name: AI
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: ayoub
+        email:
+          type: string
+          format: email
+          example: ayoub@example.com
+
+    Genre:
+      type: object
+      properties:
+        id:
+          type: integer
+        tmdbId:
+          type: integer
+        name:
+          type: string
+          example: Comedy
+
+    Movie:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 42
+        tmdbId:
+          type: integer
+        title:
+          type: string
+          example: Coyote vs. Acme
+        overview:
+          type: string
+        posterUrl:
+          type: string
+          nullable: true
+        releaseDate:
+          type: string
+          format: date
+          nullable: true
+        mediaType:
+          type: string
+          enum: [movie, tv_show]
+        isNowPlaying:
+          type: boolean
+        Genres:
+          type: array
+          items:
+            $ref: "#/components/schemas/Genre"
+
+    MoviePage:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Movie"
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
+
+    LibraryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        movieId:
+          type: integer
+        Movie:
+          $ref: "#/components/schemas/Movie"
+        createdAt:
+          type: string
+          format: date-time
+
+    ValidationError:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: email
+              message:
+                type: string
+                example: Invalid email
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Something went wrong
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ValidationFailed:
+      description: Request body/query failed validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+paths:
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Create an account
+      description: Creates a user and an empty UserPreference row in one transaction, returns a token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 30
+                  example: ayoub
+                email:
+                  type: string
+                  format: email
+                  example: ayoub@example.com
+                password:
+                  type: string
+                  minLength: 8
+                  example: "12345678"
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+                  token:
+                    type: string
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+                  token:
+                    type: string
+        "401":
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: Get the current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/movies:
+    get:
+      tags: [Movies]
+      summary: Browse/search the catalog
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+        - name: genre
+          in: query
+          schema:
+            type: string
+          example: Comedy
+        - name: search
+          in: query
+          schema:
+            type: string
+          example: batman
+        - name: mediaType
+          in: query
+          schema:
+            type: string
+            enum: [movie, tv_show]
+        - name: nowPlaying
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Paginated movie list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MoviePage"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /api/movies/{id}:
+    get:
+      tags: [Movies]
+      summary: Get a single title
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Movie with its genres
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movie"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/watchlist:
+    get:
+      tags: [Watchlist]
+      summary: List the current user's watchlist
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Watchlist items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LibraryItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Watchlist]
+      summary: Add a movie to the watchlist
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [movieId]
+              properties:
+                movieId:
+                  type: integer
+                  example: 42
+      responses:
+        "201":
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LibraryItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Already in watchlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /api/watchlist/{movieId}:
+    delete:
+      tags: [Watchlist]
+      summary: Remove a movie from the watchlist
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not in watchlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/favorites:
+    get:
+      tags: [Favorites]
+      summary: List the current user's favorites
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Favorite items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LibraryItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Favorites]
+      summary: Add a movie to favorites
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [movieId]
+              properties:
+                movieId:
+                  type: integer
+                  example: 42
+      responses:
+        "201":
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LibraryItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Movie not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Already in favorites
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+
+  /api/favorites/{movieId}:
+    delete:
+      tags: [Favorites]
+      summary: Remove a movie from favorites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: movieId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Not in favorites
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/ai/chat:
+    post:
+      tags: [AI]
+      summary: Ask the CineMind AI assistant
+      description: >
+        Stateless, RAG-grounded chat. Embeds the message, retrieves the top 5
+        similar catalog titles via pgvector cosine search, injects them as
+        context, and returns one generated reply. No streaming, no function
+        calling, no conversation history.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              properties:
+                message:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                  example: recommend me something funny
+      responses:
+        "200":
+          description: AI reply grounded in the catalog
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reply:
+                    type: string
+                  sources:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationFailed"
+        "429":
+          description: AI quota exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "503":
+          description: AI service busy (Gemini overloaded, retries exhausted)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"

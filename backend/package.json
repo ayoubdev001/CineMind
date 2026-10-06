@@ -16,9 +16,8 @@
   "type": "module",
   "dependencies": {
     "@google/genai": "^2.24.0",
-    "@scalar/express-api-reference": "^0.10.23",
+    "@scalar/express-api-reference": "^0.10.26",
     "bcrypt": "^6.0.0",
-    "cors": "^2.8.6",
     "dotenv": "^18.0.4",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
