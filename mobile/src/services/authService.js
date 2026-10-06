@@ -1,0 +1,1 @@
+//manages the logged-in user's state with secur store
