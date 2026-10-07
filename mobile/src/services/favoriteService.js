@@ -1,1 +1,1 @@
-// add or get Favorite and delete
+// link the favorite backend for add or get Favorite and delete
