@@ -1,3 +1,5 @@
+//shared logic between: Favorites, Watchlist
+
 import { Movie } from "../models/index.js";
 import { httpError } from "../middleware/errorHandler.js";
 

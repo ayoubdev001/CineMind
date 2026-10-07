@@ -1,3 +1,5 @@
+//Retrieval-Augmented Generation (RAG) undestand the meaning of the movie to recomand af
+
 import sequelize from "../config/database.js";
 import { Movie } from "../models/index.js";
 import { embedText } from "./geminiService.js";
