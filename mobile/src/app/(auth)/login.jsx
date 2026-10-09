@@ -121,8 +121,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 15,
     color: "#333333",
-    borderWidth: 1,
-    borderColor: "#9ca3af",
   },
 
   passwordContainer: {

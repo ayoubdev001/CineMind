@@ -1,0 +1,79 @@
+classDiagram
+    direction TB
+
+    class MediaType {
+        <<enumeration>>
+        movie
+        tv_show
+    }
+
+    class User {
+        -int id
+        -string username
+        -string email
+        -string passwordHash
+        -DateTime createdAt
+        -DateTime updatedAt
+        +register()
+        +login()
+    }
+
+    class UserPreference {
+        -int id
+        -int userId
+        -string[] favoriteGenres
+    }
+
+    class Movie {
+        -int id
+        -int tmdbId
+        -string title
+        -text overview
+        -string posterUrl
+        -date releaseDate
+        -MediaType mediaType
+        -boolean isNowPlaying
+        -vector~768~ embedding
+        +toEmbeddingText()
+    }
+
+    class Genre {
+        -int id
+        -int tmdbId
+        -string name
+    }
+
+    class MovieGenre {
+        -int movieId
+        -int genreId
+    }
+
+    class Watchlist {
+        -int id
+        -int userId
+        -int movieId
+        -DateTime createdAt
+        UNIQUE userId + movieId
+    }
+
+    class Favorite {
+        -int id
+        -int userId
+        -int movieId
+        -DateTime createdAt
+        UNIQUE userId + movieId
+    }
+
+    User "1" -- "1" UserPreference : has
+    User "1" -- "0..*" Watchlist : manages
+    User "1" -- "0..*" Favorite : saves
+
+    Movie "1" -- "0..*" Watchlist : appears in
+    Movie "1" -- "0..*" Favorite : favorited in
+
+    Movie "0..*" -- "0..*" Genre : categorized by
+
+    MovieGenre .. Movie : movieId
+    MovieGenre .. Genre : genreId
+
+    Movie ..> MediaType : uses
