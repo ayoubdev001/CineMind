@@ -1,12 +1,12 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-// Change this to your backend's address.
-// "localhost" won't work on a phone/emulator — use your computer's local IP instead (e.g. http://192.168.1.10:3000)
-const BASE_URL = "http://192.168.1.202:3000";
+
+const BASE_URL = "http://192.168.1.210:3000";
 
 const api = axios.create({
   baseURL: BASE_URL,
+  timeout:10000,
 });
 
 // Before every request, attach the saved token (if we have one)
@@ -18,13 +18,19 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// If the server says our token is invalid/expired, clear it
+let onUnauthorized = null;
+
+export function setUnauthorizedHandler(handler) {
+  onUnauthorized = handler;
+}
+
+// If the server rejects our token, log the user out
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      await SecureStore.deleteItemAsync("token");
-      // later: also redirect to login here, once routing is wired up
+    const hadToken = !!error.config?.headers?.Authorization;
+    if (error.response?.status === 401 && hadToken && onUnauthorized) {
+      await onUnauthorized();
     }
     return Promise.reject(error);
   }
