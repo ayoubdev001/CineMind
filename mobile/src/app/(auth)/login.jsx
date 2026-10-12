@@ -5,15 +5,40 @@ import {
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ActivityIndicator,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { router } from 'expo-router';
+import useAuthStore from "../../store/authStore";
+
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordshow, setPasswordshow] = useState(false);
+  const [localError, setLocalError] = useState("");
+
+  const login = useAuthStore((state)=>state.login);
+  const isLoading = useAuthStore((state)=>state.isLoading);
+  const error = useAuthStore((state)=>state.error);
+  const clearError = useAuthStore((state)=>state.clearError);
+
+  useEffect(() => {
+    clearError();
+   },
+  [clearError]);
+
+  const handleLogin = async ()=> {
+    if (!email.trim() || !password) {
+      setLocalError("email and password are required.");
+    return;
+    };
+  setLocalError("");
+  await login({ email: email.trim(), password });
+  };
+
+
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'android' ? 'padding' : 'height'}
@@ -29,6 +54,10 @@ export default function Login() {
         </Text>
       </View>
 
+
+        {(localError || error) ? (
+        <Text style={styles.errorText}>{localError || error}</Text>
+      ) : null}
 
       <TextInput
         style={styles.input}
@@ -66,9 +95,20 @@ export default function Login() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Log In ➤</Text>
+      <TouchableOpacity style={[styles.button, isLoading && { opacity: 0.6 }]}
+      onPress={handleLogin}
+      disabled={isLoading}
+      >
+
+        
+        {isLoading ? (
+          <ActivityIndicator color="#ffffff" />
+        ) : (
+          <Text style={styles.buttonText}>Log In ➤</Text>
+        )}
       </TouchableOpacity>
+   
+
 
       <View>
         <Text style={styles.text2}>Don't have an account?
@@ -111,6 +151,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
+  errorText: {
+    borderWidth:1,
+    borderColor:"#ff4040bd",
+    borderRadius:15,
+    padding:10,
+    color: "#ff0000",
+    fontSize: 16,
+    margin: 10,
+    textAlign: "center",
+  },
 
   input: {
     width: "100%",

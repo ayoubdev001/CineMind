@@ -5,40 +5,87 @@ import {
   TextInput,
   TouchableOpacity,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ActivityIndicator,
 } from "react-native";
-import { useState } from "react";
-import { router } from 'expo-router';
+import { useState, useEffect } from "react";
+import { router } from "expo-router";
+import useAuthStore from "../../store/authStore";
 
-export default function Login() {
-  const [fullName, setFullName] = useState('');
+export default function Register() {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showpassword, showsetPassword] = useState(false);
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [localError, setLocalError] = useState("");
+
+  const register = useAuthStore((state) => state.register);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const error = useAuthStore((state) => state.error);
+  const clearError = useAuthStore((state) => state.clearError);
+
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
+
+  const handleRegister = async () => {
+    if (!username.trim() || !email.trim() || !password || !confirmPassword) {
+      setLocalError("All fields are required. ");
+      return;
+    }
+    if (username.trim().length < 3) {
+      setLocalError("Username must be at least 3 characters. ");
+      return;
+    }
+        if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      setLocalError("Please enter a valid email address. ");
+      return;
+    }
+    if (password.length < 8) {
+      setLocalError("Password must be at least 8 characters. ");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setLocalError("Passwords do not match. ");
+      return;
+    }
+    setLocalError("");
+    await register({
+      username: username.trim(),
+      email: email.trim(),
+      password,
+    });
+  };
 
   return (
-    <KeyboardAvoidingView 
-         behavior={Platform.OS === 'android' ? 'padding' : 'height'}
-     style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "android" ? "padding" : "height"}
+      style={styles.container}
+    >
       <View style={styles.header}>
         <Text style={styles.text}>
           <Text style={styles.redText}>Create </Text>
           an Account
         </Text>
 
-        <Text style={styles.text2}>
-          Enter your details to get started </Text>
+        <Text style={styles.text2}>Enter your details to get started</Text>
       </View>
 
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your fullName"
-              placeholderTextColor="#aaa"
-              value={fullName}
-              onChangeText={setFullName}
-            />
+      {(localError || error) ? (
+        <Text style={styles.errorText}>{localError || error}</Text>
+      ) : null}
+
+      <TextInput
+        style={styles.input}
+        placeholder="Choose a username"
+        placeholderTextColor="#aaa"
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
 
       <TextInput
         style={styles.input}
@@ -69,18 +116,15 @@ export default function Login() {
           style={styles.showpass}
           onPress={() => showsetPassword(!showpassword)}
         >
-          <Text style={styles.showText}>
-            {showpassword ? "Hide" : "Show"}
-          </Text>
+          <Text style={styles.showText}>{showpassword ? "Hide" : "Show"}</Text>
         </TouchableOpacity>
       </View>
- 
-        
-            <View style={styles.passwordContainer}>
+
+      <View style={styles.passwordContainer}>
         <TextInput
           style={styles.passwordInput}
           value={confirmPassword}
-          placeholder="confirm your password"
+          placeholder="Confirm your password"
           placeholderTextColor="#aaa"
           autoCapitalize="none"
           autoCorrect={false}
@@ -99,14 +143,25 @@ export default function Login() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.button}>
-        <Text style={styles.buttonText}>Sign Up ➤</Text>
+      <TouchableOpacity
+        style={[styles.button, isLoading && { opacity: 0.6 }]}
+        onPress={handleRegister}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator color="#ffffff" />
+        ) : (
+          <Text style={styles.buttonText}>Sign Up ➤</Text>
+        )}
       </TouchableOpacity>
 
-      <View >
-        <Text style={styles.text2}>Don't have an account?
-          <TouchableOpacity onPress={()=> router.push("/(auth)/login")}>
-          <Text style={styles.redText}>  Log in</Text></TouchableOpacity></Text>
+      <View>
+        <Text style={styles.text2}>
+          Already have an account?
+          <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
+            <Text style={styles.redText}> Log in</Text>
+          </TouchableOpacity>
+        </Text>
       </View>
     </KeyboardAvoidingView>
   );
@@ -142,9 +197,18 @@ const styles = StyleSheet.create({
   text2: {
     color: "#ffffff",
     fontSize: 14,
-    
   },
 
+  errorText: {
+    borderWidth: 0.5,
+    borderColor: "#ff4040bd",
+    borderRadius: 15,
+    padding:10,
+    color: "#ff0000",
+    fontSize: 16,
+    margin: 10,
+    textAlign: "center",
+  },
 
   input: {
     width: "100%",
@@ -155,7 +219,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 15,
     color: "#333333",
-
   },
 
   passwordContainer: {
@@ -178,7 +241,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#c8c8c9",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius:20,
+    borderRadius: 20,
   },
 
   showText: {

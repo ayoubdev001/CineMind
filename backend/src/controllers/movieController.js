@@ -21,8 +21,8 @@ export async function list(req, res) {
     include,
     limit,
     offset: (page - 1) * limit,
-    distinct: true, // needed for correct count when joining
-    order: [["releaseDate", "DESC"]],
+    distinct: true,
+    order: [["releaseDate", "DESC"], ["id", "DESC"]],
   });
 
   res.json({
@@ -37,4 +37,37 @@ export async function getById(req, res) {
   });
   if (!movie) throw httpError(404, "Movie not found");
   res.json(movie);
+}
+
+export async function getSimilar(req, res) {
+  const { id } = req.params;
+
+  // 1. Get current movie and its genres
+  const movie = await Movie.findByPk(id, {
+    include: [{ model: Genre, through: { attributes: [] } }],
+  });
+
+  if (!movie) throw httpError(404, "Movie not found");
+
+  const genreIds = movie.Genres ? movie.Genres.map((g) => g.id) : [];
+
+  // 2. Query movies sharing the same genres, excluding the current movie
+  const similar = await Movie.findAll({
+    where: {
+      id: { [Op.ne]: id },
+    },
+    include: [
+      {
+        model: Genre,
+        through: { attributes: [] },
+        ...(genreIds.length > 0
+          ? { where: { id: { [Op.in]: genreIds } }, required: true }
+          : {}),
+      },
+    ],
+    limit: 10,
+    order: [["releaseDate", "DESC"]],
+  });
+
+  res.json(similar);
 }
