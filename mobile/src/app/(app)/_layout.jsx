@@ -11,6 +11,10 @@ export default function AppLayout() {
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="profile" options={{ title: "Profile" }} />
+      <Stack.Screen name="favorites" options={{ title: "Favorites" }} />
+      <Stack.Screen name="watchlist" options={{ title: "Watchlist" }} />
+      <Stack.Screen name="chat" options={{ title: "AI Assistant" }} />
     </Stack>
   );
 }

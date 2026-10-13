@@ -1,1 +1,0 @@
-// ai cominication with ai in the backend sendMessage and getRecommendations
