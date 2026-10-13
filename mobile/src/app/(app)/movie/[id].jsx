@@ -10,6 +10,9 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getMovieById, getSimilarMovies } from "../../../services/movieService";
+import { Ionicons } from "@expo/vector-icons";
+import useFavoritesStore from "../../../store/favoritesStore";
+import useWatchlistStore from "../../../store/watchlistStore";
 import getErrorMessage from "../../../utils/getErrorMessage";
 
 export default function MovieDetail() {
@@ -22,6 +25,16 @@ export default function MovieDetail() {
   const [error, setError] = useState(null);
   const [imageFailed, setImageFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+
+    const movieId = Number(id);
+  const isFavorite = useFavoritesStore((s) =>
+    s.items.some((item) => item.movieId === movieId)
+  );
+  const isInWatchlist = useWatchlistStore((s) =>
+    s.items.some((item) => item.movieId === movieId)
+  );
+  const toggleFavorite = useFavoritesStore((s) => s.toggleFavorite);
+  const toggleWatchlist = useWatchlistStore((s) => s.toggleWatchlist);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,6 +109,36 @@ export default function MovieDetail() {
       <View style={styles.info}>
         <Text style={styles.title}>{movie.title}</Text>
         <Text style={styles.meta}>{meta}</Text>
+
+                <View style={styles.actions}>
+          <TouchableOpacity
+            style={[styles.actionBtn, isFavorite && styles.actionBtnActivef]}
+            onPress={() => toggleFavorite(movie)}
+          >
+            <Ionicons
+              name={isFavorite ? "heart" : "heart-outline"}
+              size={20}
+              color="#ffffff"
+            />
+            <Text style={styles.actionText}>
+              {isFavorite ? "Favorited" : "Favorite"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionBtn, isInWatchlist && styles.actionBtnActivew]}
+            onPress={() => toggleWatchlist(movie)}
+          >
+            <Ionicons
+              name={isInWatchlist ? "bookmark" : "bookmark-outline"}
+              size={20}
+              color="#ffffff"
+            />
+            <Text style={styles.actionText}>
+              {isInWatchlist ? "In Watchlist" : "Watchlist"}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {genres.length > 0 ? (
           <View style={styles.genres}>
@@ -212,6 +255,32 @@ const styles = StyleSheet.create({
     color: "#9aa0c7",
     fontSize: 14,
     marginTop: 6,
+  },
+    actions: {
+    flexDirection: "row",
+    marginTop: 16,
+  },
+  actionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#fcfbfb",
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    height: 40,
+    marginRight: 10,
+  },
+  actionBtnActivef: {
+    backgroundColor: "#A60F14",
+  },
+  actionBtnActivew:{
+    backgroundColor:"#08ad02"
+  },
+  actionText: {
+    color: "#ffffff",
+    fontSize: 13,
+    fontWeight: "600",
+    marginLeft: 6,
   },
   genres: {
     flexDirection: "row",

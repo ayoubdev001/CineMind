@@ -12,9 +12,10 @@ import { router } from "expo-router";
 const SCREEN_PADDING = 16; // left and right padding of the grid
 const GAP = 12; // space between the two columns
 
-export default function MovieCard({ movie }) {
-  const { width } = useWindowDimensions();
-  const cardWidth = (width - SCREEN_PADDING * 2 - GAP) / 2;
+export default function MovieCard({ movie, width }) {
+  const { width: screenWidth } = useWindowDimensions();
+  // grid cards size themselves from the screen; rows pass a fixed width
+  const cardWidth = width ?? (screenWidth - SCREEN_PADDING * 2 - GAP) / 2;
   const posterHeight = cardWidth * 1.5; // TMDB posters are 2:3
 
   const [imageFailed, setImageFailed] = useState(false);
@@ -28,17 +29,19 @@ export default function MovieCard({ movie }) {
       activeOpacity={0.8}
       onPress={() => router.push(`/movie/${movie.id}`)}
     >
-      {showPoster ? (
-        <Image
-          source={{ uri: movie.posterUrl }}
-          style={[styles.poster, { height: posterHeight }]}
-          onError={() => setImageFailed(true)}
-        />
-      ) : (
-        <View style={[styles.poster, styles.placeholder, { height: posterHeight }]}>
-          <Text style={styles.placeholderIcon}>🎬</Text>
-        </View>
-      )}
+      <View style={[styles.posterFrame, { height: posterHeight }]}>
+        {showPoster ? (
+          <Image
+            source={{ uri: movie.posterUrl }}
+            style={styles.poster}
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <View style={[styles.poster, styles.placeholder]}>
+            <Text style={styles.placeholderIcon}>🎬</Text>
+          </View>
+        )}
+      </View>
 
       <Text style={styles.title} numberOfLines={2}>
         {movie.title}
@@ -49,10 +52,15 @@ export default function MovieCard({ movie }) {
 }
 
 const styles = StyleSheet.create({
+  posterFrame: {
+    width: "100%",
+    borderRadius: 20,
+    overflow: "hidden",
+    backgroundColor: "#424568",
+  },
   poster: {
     width: "100%",
-    borderRadius: 14,
-    backgroundColor: "#0b1055",
+    height: "100%",
   },
   placeholder: {
     alignItems: "center",
