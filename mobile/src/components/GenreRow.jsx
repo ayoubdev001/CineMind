@@ -1,14 +1,11 @@
-
 import { useEffect, useState } from "react";
 import {
   View,
   Text,
   FlatList,
   ActivityIndicator,
-  TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { router } from "expo-router";
 import { getMovies } from "../services/movieService";
 import MovieCard from "./MovieCard";
 
@@ -18,7 +15,9 @@ export default function GenreRow({ title, genreName }) {
 
   useEffect(() => {
     let isMounted = true;
-    getMovies({ genre: genreName, limit: 10 })
+
+    // Fetch popular movies for this genre across all years
+    getMovies({ genre: genreName, limit: 10, popular: true })
       .then((res) => {
         if (isMounted) setMovies(res.data || []);
       })
@@ -32,7 +31,7 @@ export default function GenreRow({ title, genreName }) {
     };
   }, [genreName]);
 
-  if (!isLoading && movies.length === 0) return null; // Hide row if empty
+  if (!isLoading && movies.length === 0) return null;
 
   return (
     <View style={styles.container}>
