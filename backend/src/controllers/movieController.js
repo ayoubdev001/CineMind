@@ -1,14 +1,17 @@
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import { Movie, Genre } from "../models/index.js";
 import { httpError } from "../middleware/errorHandler.js";
 
 export async function list(req, res) {
-  const { page, limit, genre, search, mediaType, nowPlaying } = req.validatedQuery;
+  const { page = 1, limit = 10, genre, search, mediaType, nowPlaying, random, popular } = req.validatedQuery || req.query;
 
   const where = {};
   if (mediaType) where.mediaType = mediaType;
   if (search) where.title = { [Op.iLike]: `%${search}%` };
-  if (nowPlaying) where.isNowPlaying = true;
+  
+  if (nowPlaying === "true" || nowPlaying === true) {
+    where.isNowPlaying = true;
+  }
 
   const include = [{
     model: Genre,
@@ -16,18 +19,26 @@ export async function list(req, res) {
     ...(genre ? { where: { name: genre }, required: true } : {}),
   }];
 
+  // Determine ordering: Popularity, Random, or Default (Release Date)
+  let order = [["releaseDate", "DESC"], ["id", "DESC"]];
+  if (random === "true" || random === true) {
+    order = [Sequelize.literal("RANDOM()")];
+  } else if (popular === "true" || popular === true) {
+    order = [["popularity", "DESC"]];
+  }
+
   const { rows, count } = await Movie.findAndCountAll({
     where,
     include,
-    limit,
-    offset: (page - 1) * limit,
+    limit: Number(limit),
+    offset: (Number(page) - 1) * Number(limit),
     distinct: true,
-    order: [["releaseDate", "DESC"], ["id", "DESC"]],
+    order,
   });
 
   res.json({
     data: rows,
-    pagination: { page, limit, total: count, totalPages: Math.ceil(count / limit) },
+    pagination: { page: Number(page), limit: Number(limit), total: count, totalPages: Math.ceil(count / limit) },
   });
 }
 
@@ -42,7 +53,6 @@ export async function getById(req, res) {
 export async function getSimilar(req, res) {
   const { id } = req.params;
 
-  // 1. Get current movie and its genres
   const movie = await Movie.findByPk(id, {
     include: [{ model: Genre, through: { attributes: [] } }],
   });
@@ -51,7 +61,6 @@ export async function getSimilar(req, res) {
 
   const genreIds = movie.Genres ? movie.Genres.map((g) => g.id) : [];
 
-  // 2. Query movies sharing the same genres, excluding the current movie
   const similar = await Movie.findAll({
     where: {
       id: { [Op.ne]: id },
@@ -66,7 +75,7 @@ export async function getSimilar(req, res) {
       },
     ],
     limit: 10,
-    order: [["releaseDate", "DESC"]],
+    order: [Sequelize.literal("RANDOM()")],
   });
 
   res.json(similar);

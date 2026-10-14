@@ -35,6 +35,9 @@ export default function Profile() {
             {user?.email}
           </Text>
         </View>
+        <TouchableOpacity style={styles.logout} onPress={confirmLogout}>
+        <Text style={styles.logoutText}>Log out</Text>
+      </TouchableOpacity>
       </View>
 
       <LibraryRow
@@ -50,10 +53,6 @@ export default function Profile() {
         emptyText="Your watchlist is empty. Tap the bookmark on any movie."
         onShowAll={() => router.push("/watchlist")}
       />
-
-      <TouchableOpacity style={styles.logout} onPress={confirmLogout}>
-        <Text style={styles.logoutText}>Log out</Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -88,17 +87,11 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   logout: {
-    marginHorizontal: 20,
-    marginTop: 10,
-    height: 48,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "#F87171",
     alignItems: "center",
     justifyContent: "center",
   },
   logoutText: {
-    color: "#F87171",
+    color: "#ff0000",
     fontWeight: "700",
     fontSize: 15,
   },

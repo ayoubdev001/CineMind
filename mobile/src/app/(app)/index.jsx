@@ -23,7 +23,6 @@ import GenreRow from "../../components/GenreRow";
 export default function Home() {
   const movies = useMoviesStore((state) => state.movies);
   const isLoading = useMoviesStore((state) => state.isLoading);
-  const isRefreshing = useMoviesStore((state) => state.isRefreshing);
   const isLoadingMore = useMoviesStore((state) => state.isLoadingMore);
   const error = useMoviesStore((state) => state.error);
   const fetchMovies = useMoviesStore((state) => state.fetchMovies);
@@ -350,5 +349,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     elevation: 6,
-  },
+    },
 });
