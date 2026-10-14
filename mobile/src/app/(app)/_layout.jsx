@@ -15,6 +15,7 @@ export default function AppLayout() {
       <Stack.Screen name="favorites" options={{ title: "Favorites" }} />
       <Stack.Screen name="watchlist" options={{ title: "Watchlist" }} />
       <Stack.Screen name="chat" options={{ title: "AI Assistant" }} />
+      <Stack.Screen name="search" options={{ title: "Search" }} />
     </Stack>
   );
 }

@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 
 import useMoviesStore from "../../store/moviesStore";
 import useAuthStore from "../../store/authStore";
@@ -92,7 +92,8 @@ export default function Home() {
         {/* Hero heading */}
         <View style={styles.hero}>
           <Text style={styles.heroTitle}>
-            Movies worth{"\n"}staying <Text style={styles.heroAccent}>up for.</Text>
+            Movies worth{"\n"}staying{" "}
+            <Text style={styles.heroAccent}>up for.</Text>
           </Text>
 
           <Text style={styles.heroSubtitle}>
@@ -170,13 +171,9 @@ export default function Home() {
         activeOpacity={0.8}
         onPress={() => router.push("/chat")}
         accessibilityRole="button"
-        accessibilityLabel="Open movie chat"
+        accessibilityLabel="Open AI chat"
       >
-        <Ionicons
-          name="chatbubble-ellipses"
-          size={25}
-          color="#FFFFFF"
-        />
+        <FontAwesome5 name="robot" size={27} color="#FFFFFF" />
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -349,5 +346,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     elevation: 6,
-    },
+  },
 });

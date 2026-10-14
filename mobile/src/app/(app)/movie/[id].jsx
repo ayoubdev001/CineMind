@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   chip: {
     borderWidth: 1,
-    borderColor: "#A60F14",
+    borderColor: "#0004ff",
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 5,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   sectionTitle: {
-    color: "#ffffff",
+    color: "#fd0202",
     fontSize: 18,
     fontWeight: "700",
     marginTop: 22,
