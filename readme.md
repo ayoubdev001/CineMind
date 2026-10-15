@@ -9,9 +9,6 @@ Built as a final-year exam project. It has two parts:
 | Backend | [`backend/`](backend) | REST API (Node.js, Express, PostgreSQL + pgvector) |
 | Mobile app | [`mobile/`](mobile) | React Native app (Expo, Expo Router, Zustand) |
 
-> **Note:** This README describes what is actually implemented, not the original planning document. Several features from the initial spec (streaming, function calling, conversation persistence, admin roles, migrations) were deliberately cut to keep the project simple and reliable to defend. See [Scope decisions](#scope-decisions).
-
----
 
 ## Features
 
