@@ -178,11 +178,11 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   bubbleUser: {
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#310283",
     borderBottomRightRadius: 4,
   },
   bubbleAssistant: {
-    backgroundColor: "#12185a",
+    backgroundColor: "#310283",
     borderBottomLeftRadius: 4,
   },
   bubbleError: {
@@ -195,6 +195,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 15,
     lineHeight: 22,
+    fontWeight:"700",
   },
   typing: {
     flexDirection: "row",
@@ -231,18 +232,14 @@ const styles = StyleSheet.create({
   },
   inputBar: {
     flexDirection: "row",
-    alignItems: "flex-end",
     paddingHorizontal: 12,
     paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#12185a",
-    backgroundColor: "#01053b",
   },
   input: {
     flex: 1,
     maxHeight: 120,
     minHeight: 44,
-    backgroundColor: "#0b1055",
+    backgroundColor: "#310283",
     color: "#ffffff",
     fontSize: 15,
     borderRadius: 22,
@@ -254,7 +251,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#7C3AED",
+    backgroundColor: "#4100b1",
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 8,
