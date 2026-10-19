@@ -13,7 +13,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-
 import useMoviesStore from "../../store/moviesStore";
 import useAuthStore from "../../store/authStore";
 import MovieCard from "../../components/MovieCard";
@@ -34,10 +33,6 @@ export default function Home() {
   useEffect(() => {
     if (movies.length === 0) fetchMovies();
   }, []);
-
-  const scrollToTop = () => {
-    mainScrollRef.current?.scrollTo({ y: 0, animated: true });
-  };
 
   const retry = () => fetchMovies();
 
