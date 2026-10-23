@@ -1,5 +1,3 @@
-//manages movie-related state is it trending or popular ...
-
 import { create } from "zustand";
 import * as movieService from "../services/movieService";
 import getErrorMessage from "../utils/getErrorMessage";

@@ -39,7 +39,7 @@ export default function MovieCard({ movie, width }) {
         ) : (
           <View style={[styles.poster, styles.placeholder]}>
             <Text style={styles.placeholderIcon}>🎬</Text>
-          </View>
+                      </View>
         )}
       </View>
 

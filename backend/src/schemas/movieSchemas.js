@@ -8,4 +8,3 @@ export const listMoviesQuerySchema = z.object({
   mediaType: z.enum(["movie", "tv_show"]).optional(),
   nowPlaying: z.coerce.boolean().optional(),
 });
-
